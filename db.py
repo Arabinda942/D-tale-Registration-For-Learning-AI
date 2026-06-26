@@ -90,6 +90,10 @@ def init_db():
 
 
 def seed_admin(username, password_hash):
+    """Ensure exactly one admin row exists matching the given username, and
+    keep its password hash in sync with whatever DTALE_ADMIN_PASSWORD is set
+    to. This runs on every restart, so rotating the password just means
+    changing the env var and redeploying -- no manual SQL needed."""
     conn = get_conn()
     try:
         c = conn.cursor()
@@ -101,7 +105,12 @@ def seed_admin(username, password_hash):
                 "VALUES (%s,%s,%s,%s,%s,%s,%s)",
                 ("admin", username, password_hash, "Administrator", "", "", datetime.utcnow().isoformat()),
             )
-            conn.commit()
+        else:
+            c.execute(
+                "UPDATE users SET password_hash=%s WHERE role='admin' AND username=%s",
+                (password_hash, username),
+            )
+        conn.commit()
     finally:
         put_conn(conn)
 
