@@ -31,8 +31,14 @@ from templates import (
 app = Flask(__name__)
 app.secret_key = os.environ.get("DTALE_SECRET_KEY", "dev-secret-change-me-in-production")
 
-ADMIN_USERNAME = "Arabinda"
-ADMIN_PASSWORD = "Arabinda123"  # only ever used once, to seed the hashed admin account below
+ADMIN_USERNAME = os.environ.get("DTALE_ADMIN_USERNAME", "Arabinda")
+ADMIN_PASSWORD = os.environ.get("DTALE_ADMIN_PASSWORD")
+
+if not ADMIN_PASSWORD:
+    raise RuntimeError(
+        "DTALE_ADMIN_PASSWORD environment variable is not set. "
+        "Set it in your Render service's Environment tab."
+    )
 
 
 # ---------------------------------------------------------------- bootstrap
